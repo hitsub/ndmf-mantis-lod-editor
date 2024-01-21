@@ -73,6 +73,10 @@ namespace MantisLODEditor.ndmf
                 }
                 EditorGUILayout.LabelField($"Triangles", $"{m_triangles.Item2}/{m_triangles.Item1}");
             }
+            else
+            {
+                EditorGUILayout.LabelField($"Triangles", $"- / - (works during only Preview)");
+            }
         }
 
         private void OnDisable()
