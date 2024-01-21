@@ -1,7 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+
+#if !UNITY_2020_1_OR_NEWER
+using AnimationModeDriver = UnityEngine.Object;
+#endif
 
 namespace MantisLODEditor.ndmf
 {
@@ -12,7 +15,9 @@ namespace MantisLODEditor.ndmf
         private bool m_applied;
         private Dictionary<Component, Mesh> m_originalMeshes;
         private (int, int) m_triangles;
+        private AnimationModeDriver m_animationModeDriver;
 
+        //Mantis Editor Parameters
         private SerializedProperty m_protectBoundary;
         private SerializedProperty m_protectDetail;
         private SerializedProperty m_protectSymmetry;
@@ -21,6 +26,14 @@ namespace MantisLODEditor.ndmf
         private SerializedProperty m_useDetailMap;
         private SerializedProperty m_detailBoost;
         private SerializedProperty m_quality;
+
+        private AnimationModeDriver AnimationModeDriver => m_animationModeDriver
+            ? m_animationModeDriver
+#if UNITY_2020_1_OR_NEWER
+            : m_animationModeDriver = CreateInstance<AnimationModeDriver>();
+#else
+            : m_animationModeDriver = ScriptableObject.CreateInstance(typeof(AnimationMode).Assembly.GetType("UnityEditor.AnimationModeDriver"));
+#endif
 
         private void OnEnable()
         {
@@ -53,14 +66,29 @@ namespace MantisLODEditor.ndmf
             
             var mantis = target as NDMFMantisLODEditor;
             m_originalMeshes = m_originalMeshes ?? mantis.GetMesh();
-            
-            if (GUILayout.Button(m_isPreview ? "Stop Preview" : "Preview"))
+
+
+            if (!m_isPreview && AnimationMode.InAnimationMode())
             {
-                m_isPreview = !m_isPreview;
-                m_applied = false;
-                if (!m_isPreview)
+                using (new EditorGUI.DisabledGroupScope(true))
                 {
-                    Revert();
+                    GUILayout.Button("Preview (Maybe other preview is working)");
+                }
+            }
+            else
+            {
+                if (GUILayout.Button(m_isPreview ? "Stop Preview" : "Preview"))
+                {
+                    m_isPreview = !m_isPreview;
+                    m_applied = false;
+                    if (m_isPreview)
+                    {
+                        ReadyPreview();
+                    }
+                    else
+                    {
+                        StopPreview();
+                    }
                 }
             }
 
@@ -79,26 +107,48 @@ namespace MantisLODEditor.ndmf
             }
         }
 
-        private void OnDisable()
+        private void ReadyPreview()
         {
-            Revert();
-        }
-
-        private void Revert()
-        {
-            m_triangles = default;
-            foreach (var pair in m_originalMeshes)
+#if UNITY_2020_1_OR_NEWER
+            AnimationMode.StartAnimationMode(AnimationModeDriver);
+#else
+            AnimationMode.StartAnimationMode();
+#endif
+            try
             {
-                switch (pair.Key)
+                AnimationMode.BeginSampling();
+
+                foreach (var originalMeshPair in m_originalMeshes)
                 {
-                    case MeshFilter meshFilter:
-                        meshFilter.sharedMesh = pair.Value;
-                        break;
-                    case SkinnedMeshRenderer skinnedMeshRenderer:
-                        skinnedMeshRenderer.sharedMesh = pair.Value;
-                        break;
+                    AnimationMode.AddPropertyModification(
+                        EditorCurveBinding.PPtrCurve("", typeof(SkinnedMeshRenderer), "m_Mesh"),
+                        new PropertyModification
+                        {
+                            target = originalMeshPair.Key,
+                            propertyPath = "m_Mesh",
+                            objectReference = originalMeshPair.Value,
+                        }, 
+                        true);
                 }
             }
+            finally
+            {
+                AnimationMode.EndSampling();   
+            }
+        }
+        
+        private void StopPreview()
+        {
+#if UNITY_2020_1_OR_NEWER
+            AnimationMode.StopAnimationMode(AnimationModeDriver);
+#else
+            AnimationMode.StopAnimationMode();
+#endif
+        }
+
+        private void OnDisable()
+        {
+            StopPreview();
         }
     }
 }
