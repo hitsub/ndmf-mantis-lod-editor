@@ -18,7 +18,7 @@ namespace MantisLODEditor.ndmf
             seq.BeforePlugin("com.anatawa12.avatar-optimizer");
             seq.Run("Decimate Polygons by MantisLODEditor", ctx =>
             {
-                var ndmfMantises = ctx.AvatarRootObject.GetComponentsInChildren<NDMFMantisLODEditor>();
+                var ndmfMantises = ctx.AvatarRootObject.GetComponentsInChildren<NDMFMantisLODEditor>(true);
                 foreach (var ndmfMantis in ndmfMantises)
                 {
                     ndmfMantis.Apply();
