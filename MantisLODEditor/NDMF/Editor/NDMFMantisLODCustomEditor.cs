@@ -26,6 +26,9 @@ namespace MantisLODEditor.ndmf
         private SerializedProperty m_useDetailMap;
         private SerializedProperty m_detailBoost;
         private SerializedProperty m_quality;
+        
+        //NDMF Mantis Parameters
+        private SerializedProperty m_removeVertexColor;
 
         private AnimationModeDriver AnimationModeDriver => m_animationModeDriver
             ? m_animationModeDriver
@@ -45,6 +48,7 @@ namespace MantisLODEditor.ndmf
             m_useDetailMap = serializedObject.FindProperty("use_detail_map");
             m_detailBoost = serializedObject.FindProperty("detail_boost");
             m_quality = serializedObject.FindProperty("quality");
+            m_removeVertexColor = serializedObject.FindProperty("remove_vertex_color");
         }
         
         public override void OnInspectorGUI()
@@ -57,6 +61,7 @@ namespace MantisLODEditor.ndmf
             EditorGUILayout.PropertyField(m_protectShape, new GUIContent("Beautiful Triangles"));
             EditorGUILayout.PropertyField(m_useDetailMap, new GUIContent("Use Detail Map"));
             EditorGUILayout.PropertyField(m_detailBoost, new GUIContent("Detail Boost"));
+            EditorGUILayout.PropertyField(m_removeVertexColor, new GUIContent("Remove Vertex Color After Optimize"));
             EditorGUILayout.PropertyField(m_quality, new GUIContent("Quality"));
             if (serializedObject.hasModifiedProperties)
             {

@@ -31,6 +31,9 @@ namespace MantisLODEditor.ndmf
         
         [SerializeField][Range(0, 100)]
         private float quality = 100.0f;
+        
+        [SerializeField]
+        private bool remove_vertex_color = false;
 
         public (int, int) Apply(Dictionary<Component, Mesh> _meshes = null)
         {
@@ -52,6 +55,11 @@ namespace MantisLODEditor.ndmf
 
                 var mesh = mantisMeshArray[0].mesh;
                 mesh.name = $"NDMFMantisMesh{mesh.name}";
+
+                if (remove_vertex_color)
+                {
+                    mesh.colors32 = null;
+                }
 
                 switch (meshPair.Key)
                 {
