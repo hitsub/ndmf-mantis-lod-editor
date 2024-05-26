@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace MantisLODEditor.ndmf
 {
-    public class NDMFMantisLODEditor : AvatarTagComponent
+    public class NDMFMantisLODEditor : MonoBehaviour, IEditorOnly
     {
         [SerializeField]
         private bool protect_boundary = true;
