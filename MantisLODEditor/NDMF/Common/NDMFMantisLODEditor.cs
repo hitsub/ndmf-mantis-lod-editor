@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using nadena.dev.modular_avatar.core;
 using UnityEngine;
+using VRC.SDKBase;
 using Object = UnityEngine.Object;
 
 namespace MantisLODEditor.ndmf
@@ -35,6 +36,12 @@ namespace MantisLODEditor.ndmf
         [SerializeField]
         private bool remove_vertex_color = false;
 
+        /// <summary>
+        /// メッシュをまとめて投げてMantisLODEditorにデシメートしてもらう
+        /// Through meshes and make MantisLODEditor decimate them
+        /// </summary>
+        /// <param name="_meshes">MeshComponents and meshes</param>
+        /// <returns>triangles</returns>
         public (int, int) Apply(Dictionary<Component, Mesh> _meshes = null)
         {
             var meshes = _meshes ?? GetMesh();
@@ -91,11 +98,19 @@ namespace MantisLODEditor.ndmf
 
             foreach (var meshFilter in staticMeshes)
             {
+                if (meshFilter.sharedMesh == null)
+                {
+                    continue;
+                }
                 meshes.Add(meshFilter, meshFilter.sharedMesh);
             }
 
             foreach (var skinnedMesh in skinnedMeshes)
             {
+                if (skinnedMesh.sharedMesh == null)
+                {
+                    continue;
+                }
                 meshes.Add(skinnedMesh, skinnedMesh.sharedMesh);
             }
 
