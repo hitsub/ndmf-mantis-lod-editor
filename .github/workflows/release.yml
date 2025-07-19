@@ -1,0 +1,58 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: "v1.2.3 etc."
+        required: true
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set Version
+        run: |
+          if [ ${{ inputs.version }} ] ; then
+            echo "version=${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "version=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+
+      - name: Set Environment Variables
+        run: |
+          echo "unityPackage=NDMFMantisLODEditor_${{ env.version }}.unitypackage" >> $GITHUB_ENV
+          echo "unityPackageZipFile=NDMFMantisLODEditor_${{ env.version }}.zip" >> $GITHUB_ENV
+
+      - name: Create .meta list
+        run: find "MantisLODEditor" -name \*.meta >> metaList
+
+      - name: Create UnityPackage
+        uses: pCYSl5EDgo/create-unitypackage@v1.2.3
+        with:
+          package-path: ${{ env.unityPackage }}
+          include-files: metaList
+
+      - name: Create UnityPackage Zip
+        uses: thedoctor0/zip-release@v0.3.0
+        with:
+          directory: "."
+          path: ${{ env.unityPackage }}
+          filename: "${{env.unityPackageZipFile}}"
+
+      - name: Make Release
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          tag_name: ${{ env.version }}
+          files: |
+            ${{ env.unityPackageZipFile }}
