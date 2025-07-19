@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using nadena.dev.modular_avatar.core;
 using UnityEngine;
 using VRC.SDKBase;
 using Object = UnityEngine.Object;

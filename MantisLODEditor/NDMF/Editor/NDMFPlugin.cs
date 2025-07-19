@@ -22,6 +22,7 @@ namespace MantisLODEditor.ndmf
                 foreach (var ndmfMantis in ndmfMantises)
                 {
                     ndmfMantis.Apply();
+                    Object.DestroyImmediate(ndmfMantis);
                 }
             });
         }
